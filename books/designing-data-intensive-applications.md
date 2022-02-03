@@ -67,7 +67,18 @@ A data-intensive application is typically built from standard building blocks. T
 * **Scalability**. Reasonable ways of dealing with growth.
 * **Maintainability**. Be able to work on it _productively_.
 
+A lot of tricky questions arise when designing a data system:
+1. How do you ensure that the data remains correct and complete, even when things go wrong internally?
+2. How do you provide consistently good performance to clients, even when
+parts of your system are degraded?
+3. How do you scale to handle an increase in load?
+4. What does a good API for the service look like?
+
+One possible architecture of data systems
+
+![](img/designing-data-intensive-applications/1-1.png)
 ### Reliability
+(Roughly speaking - continuing to work correctly even when things go wrong)
 
 Typical expectations:
 * Application performs the function the user expected
@@ -103,6 +114,9 @@ Twitter main operations
 - Post tweet: a user can publish a new message to their followers (4.6k req/sec, over 12k req/sec peak)
 - Home timeline: a user can view tweets posted by the people they follow (300k req/sec)
 
+![](img/designing-data-intensive-applications/1-2.png)
+![](img/designing-data-intensive-applications/1-3.png)
+
 Two ways of implementing those operations:
 1. Posting a tweet simply inserts the new tweet into a global collection of tweets. When a user requests their home timeline, look up all the people they follow, find all the tweets for those users, and merge them (sorted by time). This could be done with a SQL `JOIN`.
 2. Maintain a cache for each user's home timeline. When a user _posts a tweet_, look up all the people who follow that user, and insert the new tweet into each of their home timeline caches.
@@ -132,6 +146,8 @@ It's common to see the _average_ response time of a service reported. However, t
 * _Median_ (_50th percentile_ or _p50_). Half of user requests are served in less than the median response time, and the other half take longer than the median
 * Percentiles _95th_, _99th_ and _99.9th_ (_p95_, _p99_ and _p999_) are good to figure out how bad your outliners are.
 
+![](img/designing-data-intensive-applications/1-4.png)
+
 Amazon describes response time requirements for internal services in terms of the 99.9th percentile because the customers with the slowest requests are often those who have the most data. The most valuable customers.
 
 On the other hand, optimising for the 99.99th percentile would be too expensive.
@@ -152,6 +168,8 @@ When generating load artificially, the client needs to keep sending requests ind
 * _Scaling up_ or _vertical scaling_: Moving to a more powerful machine
 * _Scaling out_ or _horizontal scaling_: Distributing the load across multiple smaller machines.
 * _Elastic_ systems: Automatically add computing resources when detected load increase. Quite useful if load is unpredictable.
+
+![](img/designing-data-intensive-applications/1-5.png)
 
 Distributing stateless services across multiple machines is fairly straightforward. Taking stateful data systems from a single node to a distributed setup can introduce a lot of complexity. Until recently it was common wisdom to keep your database on a single node.
 
